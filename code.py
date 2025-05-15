@@ -4,69 +4,73 @@ import json
 import os
 
 filename = "userdatabase.json"
+BG_COLOR = "#2C3E50"
+BTN_COLOR = "#1ABC9C"
+TEXT_COLOR = "#ECF0F1"
+ENTRY_BG = "#34495E"
+FONT = ("Helvetica", 12)
 
-# Load data from file or return empty list
+# Load data
 def load_data():
     if os.path.exists(filename) and os.path.getsize(filename) > 0:
         with open(filename, "r") as file:
             return json.load(file)
-    return []
+    else:
+        return []
 
-# Save data to file
+# Save data
 def save_data(data):
     with open(filename, "w") as file:
         json.dump(data, file, indent=2)
 
-# Sign Up Page
-def signup_window():
+# Beautiful window wrapper
+def create_window(title):
     win = tk.Toplevel()
-    win.title("Sign Up")
-    win.geometry("300x300")
+    win.title(title)
+    win.geometry("400x400")
+    win.config(bg=BG_COLOR)
+    return win
 
-    tk.Label(win, text="Name:").pack()
-    name_entry = tk.Entry(win)
-    name_entry.pack()
+# Entry label + field
+def create_labeled_entry(parent, label_text, show=None):
+    tk.Label(parent, text=label_text, font=FONT, fg=TEXT_COLOR, bg=BG_COLOR).pack(pady=5)
+    entry = tk.Entry(parent, font=FONT, bg=ENTRY_BG, fg=TEXT_COLOR, insertbackground=TEXT_COLOR, show=show)
+    entry.pack(pady=5, ipadx=10, ipady=5)
+    return entry
 
-    tk.Label(win, text="Email:").pack()
-    email_entry = tk.Entry(win)
-    email_entry.pack()
+# Styled button
+def create_button(parent, text, command):
+    return tk.Button(parent, text=text, command=command, bg=BTN_COLOR, fg="white", font=FONT,
+                     activebackground="#16A085", relief="flat", padx=10, pady=5)
 
-    tk.Label(win, text="Password:").pack()
-    pass_entry = tk.Entry(win, show="*")
-    pass_entry.pack()
+# Sign Up Window
+def signup_window():
+    win = create_window("Sign Up")
+    name_entry = create_labeled_entry(win, "Name:")
+    email_entry = create_labeled_entry(win, "Email:")
+    pass_entry = create_labeled_entry(win, "Password:", show="*")
 
     def submit():
-        name = name_entry.get().strip()
-        email = email_entry.get().strip()
-        password = pass_entry.get().strip()
+        name, email, password = name_entry.get(), email_entry.get(), pass_entry.get()
         if not name or not email or not password:
-            messagebox.showerror("Error", "All fields are required")
+            messagebox.showerror("Error", "All fields required")
             return
         data = load_data()
         data.append({"name": name, "email": email, "pass": password})
         save_data(data)
-        messagebox.showinfo("Success", f"Account created for {name}")
+        messagebox.showinfo("Success", f"Account Created for {name}")
         win.destroy()
 
-    tk.Button(win, text="Create Account", command=submit).pack(pady=10)
+    create_button(win, "Create Account", submit).pack(pady=20)
 
-# Login Page
+# Login Window
 def login_window():
-    win = tk.Toplevel()
-    win.title("Login")
-    win.geometry("300x200")
-
-    tk.Label(win, text="Email:").pack()
-    email_entry = tk.Entry(win)
-    email_entry.pack()
-
-    tk.Label(win, text="Password:").pack()
-    pass_entry = tk.Entry(win, show="*")
-    pass_entry.pack()
+    win = create_window("Login")
+    email_entry = create_labeled_entry(win, "Email:")
+    pass_entry = create_labeled_entry(win, "Password:", show="*")
 
     def login():
-        email = email_entry.get().strip()
-        password = pass_entry.get().strip()
+        email, password = email_entry.get(), pass_entry.get()
         data = load_data()
         for user in data:
             if user["email"] == email and user["pass"] == password:
@@ -75,30 +79,17 @@ def login_window():
                 return
         messagebox.showerror("Error", "Invalid credentials")
 
-    tk.Button(win, text="Login", command=login).pack(pady=10)
+    create_button(win, "Login", login).pack(pady=20)
 
-# Change Password Page
+# Change Password Window
 def change_password_window():
-    win = tk.Toplevel()
-    win.title("Change Password")
-    win.geometry("300x250")
-
-    tk.Label(win, text="Email:").pack()
-    email_entry = tk.Entry(win)
-    email_entry.pack()
-
-    tk.Label(win, text="Old Password:").pack()
-    old_entry = tk.Entry(win, show="*")
-    old_entry.pack()
-
-    tk.Label(win, text="New Password:").pack()
-    new_entry = tk.Entry(win, show="*")
-    new_entry.pack()
+    win = create_window("Change Password")
+    email_entry = create_labeled_entry(win, "Email:")
+    old_entry = create_labeled_entry(win, "Old Password:", show="*")
+    new_entry = create_labeled_entry(win, "New Password:", show="*")
 
     def change():
-        email = email_entry.get().strip()
-        old = old_entry.get().strip()
-        new = new_entry.get().strip()
+        email, old, new = email_entry.get(), old_entry.get(), new_entry.get()
         data = load_data()
         found = False
         for user in data:
@@ -108,56 +99,49 @@ def change_password_window():
                 break
         if found:
             save_data(data)
-            messagebox.showinfo("Success", "Password changed")
+            messagebox.showinfo("Success", "Password Changed")
             win.destroy()
         else:
             messagebox.showerror("Error", "Incorrect email or old password")
 
-    tk.Button(win, text="Change Password", command=change).pack(pady=10)
+    create_button(win, "Change Password", change).pack(pady=20)
 
-# Delete Account Page
+# Delete Account Window
 def delete_account_window():
-    win = tk.Toplevel()
-    win.title("Delete Account")
-    win.geometry("300x200")
-
-    tk.Label(win, text="Email:").pack()
-    email_entry = tk.Entry(win)
-    email_entry.pack()
-
-    tk.Label(win, text="Password:").pack()
-    pass_entry = tk.Entry(win, show="*")
-    pass_entry.pack()
+    win = create_window("Delete Account")
+    email_entry = create_labeled_entry(win, "Email:")
+    pass_entry = create_labeled_entry(win, "Password:", show="*")
 
     def delete():
-        email = email_entry.get().strip()
-        password = pass_entry.get().strip()
+        email, password = email_entry.get(), pass_entry.get()
         data = load_data()
-        new_data = [user for user in data if not (user["email"] == email and user["pass"] == password)]
+        new_data = [u for u in data if not (u["email"] == email and u["pass"] == password)]
         if len(new_data) != len(data):
             save_data(new_data)
-            messagebox.showinfo("Success", "Account deleted")
+            messagebox.showinfo("Success", "Account Deleted")
             win.destroy()
         else:
             messagebox.showerror("Error", "Invalid credentials")
 
-    tk.Button(win, text="Delete Account", command=delete).pack(pady=10)
+    create_button(win, "Delete Account", delete).pack(pady=20)
 
-# Main Window
+# Main Menu
 def main_menu():
     root = tk.Tk()
-    root.title("Json based User Auth System")
-    root.geometry("300x300")
+    root.title("User Auth System")
+    root.geometry("450x500")
+    root.config(bg=BG_COLOR)
 
-    tk.Label(root, text="User Authentication System", font=("Arial", 14)).pack(pady=10)
-    tk.Button(root, text="Sign Up", width=25, command=signup_window).pack(pady=5)
-    tk.Button(root, text="Login", width=25, command=login_window).pack(pady=5)
-    tk.Button(root, text="Change Password", width=25, command=change_password_window).pack(pady=5)
-    tk.Button(root, text="Delete Account", width=25, command=delete_account_window).pack(pady=5)
-    tk.Button(root, text="Exit", width=25, command=root.destroy).pack(pady=20)
+    tk.Label(root, text="Json-Based User Auth System", font=("Helvetica", 16, "bold"), bg=BG_COLOR, fg=TEXT_COLOR).pack(pady=30)
+
+    create_button(root, "Sign Up", signup_window).pack(pady=10, ipadx=20)
+    create_button(root, "Login", login_window).pack(pady=10, ipadx=20)
+    create_button(root, "Change Password", change_password_window).pack(pady=10, ipadx=20)
+    create_button(root, "Delete Account", delete_account_window).pack(pady=10, ipadx=20)
+    create_button(root, "Exit", root.destroy).pack(pady=30, ipadx=20)
 
     root.mainloop()
 
-# Start the app
-if __name__ == "__main__":
-    main_menu()
+# Run the app
+main_menu()
+
